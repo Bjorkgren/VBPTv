@@ -8,8 +8,11 @@ import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bjorkgren.vbptv.model.TVChannel
+import com.bjorkgren.vbptv.model.TVProgram
 
 class MainActivity : AppCompatActivity() {
+
+    val wantedChannels = listOf("SVT1", "SVT2", "TV3", "TV4", "Kanal 5")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +30,13 @@ class MainActivity : AppCompatActivity() {
             Request.Method.GET, url,
             Response.Listener<String> { response ->
                 // Display the first 500 characters of the response string.
-                parseSchedule(response)
+                Log.w("PARSE", "PARSING...")
+                val schedule = parseSchedule(response)
+                Log.e("PÅGÅENDE PROGRAM", "PÅGÅENDE PROGRAM")
+                for(wanted in wantedChannels){
+                    Log.e("pågående in $wanted", schedule[wanted]?.first()?.headline)
+                }
+
                 //textView.text = "Response is: ${response.substring(0, 500)}"
             },
             Response.ErrorListener { error ->
@@ -35,6 +44,7 @@ class MainActivity : AppCompatActivity() {
             })
 
 // Add the request to the RequestQueue.
+        Log.w("START", "STARTING....")
         queue.add(stringRequest)
     }
 
@@ -42,17 +52,27 @@ class MainActivity : AppCompatActivity() {
     //Nästa tab:en är "Kommande program", program nr 2 per kanal,
     //Nästa tab:en är "Kommande program, sid 2", program nr 3 per kanal
     //Sista tab:en är "Kommande program, sid 3", program nr 4 per kanal
+    //Detta kan va en loop, som programmatiskt skapar upp sidorna, och lägger till i en nyare viewPager ????
 
-    fun parseSchedule(textTvPages: String) : MutableList<TVChannel>{
-        val wantedChannels = listOf("SVT1", "SVT2", "TV3", "TV4", "Kanal 5")
-        var channels: MutableList<TVChannel> = mutableListOf<TVChannel>()
+    //TODO: Gör en hashmap istället för TVChannel.... <string, list<tvprogram>>
+
+    fun parseSchedule(textTvPages: String) : HashMap<String, MutableList<TVProgram>>{
+        //var channels: MutableList<TVChannel> = mutableListOf<TVChannel>()
+        val channels = HashMap<String, MutableList<TVProgram>>()
+        for(wanted in wantedChannels){
+            channels[wanted] = mutableListOf<TVProgram>()
+        }
+
         val rows = textTvPages.split("\\n ").toTypedArray().drop(4)
         for(row in rows){
-            Log.w("row", row)
+            //Log.w("row", row)
             val items = row.split('<')
+            /*for(item in items){
+                Log.w("item", item)
+            }*/
             if(items.size > 3){
-                val channel = items[3].split('>')[1].trim()
-                //Log.e("channel", channel)
+                val channel = items[items.size-2].split('>')[1].trim()
+                Log.e("channel", channel)
                 if(channel in wantedChannels) {
 
                     val time = items[0]
@@ -65,7 +85,8 @@ class MainActivity : AppCompatActivity() {
                         .replace("\\u00c4", "Ä")
                         .replace("\\u00d6", "Ö")
                     //Log.e("headline", headline)
-                    Log.e("show", "Time: $time Headline: $headline @ $channel")
+                   Log.e("show", "Time: $time Headline: $headline @ $channel")
+                    channels[channel]?.add(TVProgram(time,headline))
                 }
             }
         }
