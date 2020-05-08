@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                 Log.e("PÅGÅENDE PROGRAM", "PÅGÅENDE PROGRAM")
                 for(wanted in wantedChannels){
                     Log.e("pågående in $wanted", schedule[wanted]?.first()?.headline)
+                    Log.w("senare antal i kanalen", "antal: " + schedule[wanted]?.size)
                 }
 
                 //textView.text = "Response is: ${response.substring(0, 500)}"
@@ -48,13 +49,13 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
+    //TODO: Programmatically create the "Pågående program"-tab
+        //this will also have the channel...
+    //TODO: loop and Programatically create the following specific channel tabs
+        //becase this layout will be more like a table with just time + name
     //Första tab:en är "pågående program", ett program per kanal, precis som de ser ut på SVT text 650
-    //Nästa tab:en är "Kommande program", program nr 2 per kanal,
-    //Nästa tab:en är "Kommande program, sid 2", program nr 3 per kanal
-    //Sista tab:en är "Kommande program, sid 3", program nr 4 per kanal
-    //Detta kan va en loop, som programmatiskt skapar upp sidorna, och lägger till i en nyare viewPager ????
-
-    //TODO: Gör en hashmap istället för TVChannel.... <string, list<tvprogram>>
+    //Nästa tab:en är för SVT1, sen en tab per kanal
+    //      pga att vissa kanaler har många korta program (SVT2) o vissa har få o långa...
 
     fun parseSchedule(textTvPages: String) : HashMap<String, MutableList<TVProgram>>{
         //var channels: MutableList<TVChannel> = mutableListOf<TVChannel>()
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             }*/
             if(items.size > 3){
                 val channel = items[items.size-2].split('>')[1].trim()
-                Log.e("channel", channel)
+                //Log.e("channel", channel)
                 if(channel in wantedChannels) {
 
                     val time = items[0]
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                         .replace("\\u00c4", "Ä")
                         .replace("\\u00d6", "Ö")
                     //Log.e("headline", headline)
-                   Log.e("show", "Time: $time Headline: $headline @ $channel")
+                   //Log.e("show", "Time: $time Headline: $headline @ $channel")
                     channels[channel]?.add(TVProgram(time,headline))
                 }
             }
