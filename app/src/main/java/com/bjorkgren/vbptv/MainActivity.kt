@@ -1,11 +1,14 @@
 package com.bjorkgren.vbptv
 
 import android.app.ActionBar
+import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.util.Log
+import android.view.View
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -21,10 +24,12 @@ class MainActivity : AppCompatActivity() {
     var textTvPages = listOf(650, 651, 652, 653)
     val schedule = hashMapOf<String, MutableList<TVProgram>>()
     var lastAddedChannel = ""
+    lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        progressBar = findViewById<ProgressBar>(R.id.progress)
     }
 
     override fun onResume() {
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         val queue = Volley.newRequestQueue(this)
         //Fetch pages in order to avoid the async sort of lists n stuff
         //Warning, this is a bit recursive...
+        progressBar.visibility = ProgressBar.VISIBLE
         fetchPages(queue, textTvPages)
     }
 
@@ -47,9 +53,12 @@ class MainActivity : AppCompatActivity() {
                 Request.Method.GET, "https://www.svt.se/svttext/webL/pages/${pages.first()}.html",
                 Response.Listener<String> { response ->
                     parseSVTTextPage(response)
+                    progressBar.setProgress(5 - pages.size, true)
                     updateUI()
                     if(pages.size > 1){
                         fetchPages(queue, pages.drop(1))
+                    }else{
+                        progressBar.visibility = ProgressBar.GONE
                     }
                 },
                 Response.ErrorListener { error ->
