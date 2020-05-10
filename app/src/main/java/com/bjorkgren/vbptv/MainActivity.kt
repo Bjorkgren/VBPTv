@@ -1,8 +1,11 @@
 package com.bjorkgren.vbptv
 
+import android.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
@@ -15,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     val wantedChannels = listOf("SVT1", "SVT2", "TV3", "TV4", "Kanal 5")
     val textTvPages = listOf(650, 651, 652)
     val schedule = hashMapOf<String, MutableList<TVProgram>>()
+    var lastAddedChannel = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,47 +40,13 @@ class MainActivity : AppCompatActivity() {
                     Request.Method.GET, "https://www.svt.se/svttext/webL/pages/$page.html",
                     Response.Listener<String> { response ->
                         parseSVTTextPage(response)
-                        // Display the first 500 characters of the response string.
-                        /*Log.w("PARSE", "PARSING...")
-                        val schedule = parseSchedule(response)
-                        Log.e("PÅGÅENDE PROGRAM", "PÅGÅENDE PROGRAM")
-                        for(wanted in wantedChannels){
-                            Log.e("pågående in $wanted", schedule[wanted]?.first()?.headline)
-                            Log.w("senare antal i kanalen", "antal: " + schedule[wanted]?.size)
-                        }
-                        */
-                        //textView.text = "Response is: ${response.substring(0, 500)}"
+                        updateUI()
                     },
                     Response.ErrorListener { error ->
                         Log.e("Error", error.message)
                     })
             )
         }
-
-/*
-// Request a string response from the provided URL.
-        val stringRequest = StringRequest(
-            Request.Method.GET, url,
-            Response.Listener<String> { response ->
-                // Display the first 500 characters of the response string.
-                Log.w("PARSE", "PARSING...")
-                val schedule = parseSchedule(response)
-                Log.e("PÅGÅENDE PROGRAM", "PÅGÅENDE PROGRAM")
-                for(wanted in wantedChannels){
-                    Log.e("pågående in $wanted", schedule[wanted]?.first()?.headline)
-                    Log.w("senare antal i kanalen", "antal: " + schedule[wanted]?.size)
-                }
-
-                //textView.text = "Response is: ${response.substring(0, 500)}"
-            },
-            Response.ErrorListener { error ->
-                Log.e("Error", error.message)
-            })
-
-// Add the request to the RequestQueue.
-        Log.w("START", "STARTING....")
-        queue.add(stringRequest)
-        */
     }
 
     //TODO: Programmatically create the "Pågående program"-tab
@@ -107,60 +77,52 @@ class MainActivity : AppCompatActivity() {
     fun parseLine(line: String){
         //  14.20-14.50 <span class="G">Husdrömmar             </span><span class="W">SVT1</span>
         //  <span class="G">           Sicilien <a href="199.html">199</a></span><span class="Y">               </span>
+        //  16.05-16.15 <span class="G">Sverige idag på        </span><span class="W">SVT2</span>
+        //  <span class="G">           meänkieli                  </span>
+
         if(line.contains("<span ")){
             val trimmed = line.trim()
-            if(trimmed.startsWith("<span class=\"G\">   ")){
-                //TODO: Append to latest added show headline
-            }else{
-                val time = trimmed.substring(0, line.indexOf(' '))
-                val headlineStart = trimmed.indexOf('>') +1
-                val headline = trimmed.substring(headlineStart, trimmed.indexOf('<', startIndex = headlineStart))
-                val channelEnd = trimmed.lastIndexOf('<')
-                val channel = trimmed.substring(trimmed.lastIndexOf('>', startIndex = channelEnd))
-                Log.w("a find!", "$time^$headline^$channel")
-
-            }
-
-        }
-
-    }
-/*
-    //Parsing from the api.textv.nu
-    fun parseSchedule(textTvPages: String) : HashMap<String, MutableList<TVProgram>>{
-        //var channels: MutableList<TVChannel> = mutableListOf<TVChannel>()
-        val channels = HashMap<String, MutableList<TVProgram>>()
-        for(wanted in wantedChannels){
-            channels[wanted] = mutableListOf<TVProgram>()
-        }
-
-        var latestChannel = "XXX"
-        // <span class=\"G\">      .
-        val rows = textTvPages.split("\\n ").toTypedArray().drop(4)
-        for(row in rows){
-            Log.w("row", row)
-            val items = row.split('<')
-            if(items.size > 3){
-                val channel = items[items.size-2].split('>')[1].trim()
-                //Log.e("channel", channel)
-                if(channel in wantedChannels) {
-
-                    val time = items[0]
-                    //Log.e("time", time)
-                    val headline = items[1].split('>')[1]
-                        .replace("\\u00e5", "å")
-                        .replace("\\u00e4", "ä")
-                        .replace("\\u00e6", "ö")
-                        .replace("\\u00c5", "Å")
-                        .replace("\\u00c4", "Ä")
-                        .replace("\\u00d6", "Ö")
-                    //Log.e("headline", headline)
-                   Log.e("show", "Time: $time Headline: $headline @ $channel")
-                    channels[channel]?.add(TVProgram(time,headline))
+            Log.w("LINE", trimmed)
+            val continuation = "<span class=\"G\">   "
+            if(trimmed.startsWith(continuation)){
+                //Append to latest added show headline
+                var ending = trimmed.substring(continuation.length)
+                val endOfLine = ending.indexOf('<')
+                if(endOfLine > 1){
+                    ending = ending.substring(0, endOfLine)
                 }
+                ending = ending.trim()
+                //Log.e("got END for" + lastAddedChannel, "\"$ending\"")
+                schedule[lastAddedChannel]!!.last()!!.headline += " $ending"
+
+            }else{
+                val time = trimmed.substring(0, line.indexOf('<') - 2)
+                val headlineStart = trimmed.indexOf('>') +1
+                val headline = trimmed.substring(headlineStart, trimmed.indexOf('<', startIndex = headlineStart)).trim()
+                val channelEnd = trimmed.lastIndexOf('<')
+                val channel = trimmed.substring(trimmed.lastIndexOf('>', startIndex = channelEnd) + 1, channelEnd)
+                schedule[channel]?.add(TVProgram(time, headline))
+                lastAddedChannel = channel
+                //Log.w("a find!", "$time^$headline^$channel")
             }
         }
-
-        return channels
     }
-    */
+
+    fun updateUI(){
+        var i = 0
+      // val listLayout = findViewById<LinearLayout>(R.id.channels)
+        for(wanted in wantedChannels){
+            //Skapa en linear layout per kanal, som bara visar program 0, håller man ner nånstans i uit så visas nästkommande tills man släpper
+            //schedule[wanted] = mutableListOf<TVProgram>()
+
+            //TODO: DO not add UI, just update the items..
+            val itemLayout = LinearLayout(this)
+            itemLayout.setLayoutParams(LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.0f))
+            itemLayout.orientation = LinearLayout.HORIZONTAL
+            val txtChannel = TextView(this)
+            txtChannel.text = (++i).toString()
+            itemLayout.addView(txtChannel)
+           // listLayout.addView(itemLayout)
+        }
+    }
 }
