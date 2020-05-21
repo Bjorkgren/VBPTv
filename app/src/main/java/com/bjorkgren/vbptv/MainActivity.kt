@@ -170,8 +170,8 @@ class MainActivity : AppCompatActivity() {
             channelNo.text = (x+1).toString()
             channelNo.setBackgroundColor(channelColor)
             //channelLayout.setBackgroundColor(bgBlack)
-            val time = channelLayout.findViewById<TextView>(R.id.txtTime)
-            time.setTextColor(channelColor)
+            //channelLayout.findViewById<TextView>(R.id.txtTimeBegin).text =
+            //time.setTextColor(channelColor)
             val headline = channelLayout.findViewById<TextView>(R.id.txtHeadline)
             headline.setTextColor(channelColor)
         }
@@ -183,10 +183,9 @@ class MainActivity : AppCompatActivity() {
             val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
             val program = schedule[wantedChannels[x]]?.get(index)//.first()
             if(program != null){
-                val time = channelLayout.findViewById<TextView>(R.id.txtTime)
-                val headline = channelLayout.findViewById<TextView>(R.id.txtHeadline)
-                time.text = program.begins
-                headline.text = program.headline
+                channelLayout.findViewById<TextView>(R.id.txtTimeBegin).text = program.begins
+                channelLayout.findViewById<TextView>(R.id.txtTimeEnd).text = program.ends
+                channelLayout.findViewById<TextView>(R.id.txtHeadline).text = program.headline
             }
         }
     }

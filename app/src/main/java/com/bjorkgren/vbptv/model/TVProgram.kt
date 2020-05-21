@@ -1,11 +1,18 @@
 package com.bjorkgren.vbptv.model
 
-class TVProgram(begins: String, headline: String) {
+class TVProgram(duration: String, headline: String) {
     var begins: String = ""
+    var ends: String = ""
     var headline: String = ""
+    var progress: Int = -1 //if not calculated
 
     init{
-        this.begins = begins
+        val timeparts = duration.split('-')
+        this.begins = timeparts[0]
+        this.ends = timeparts[1]
         this.headline = headline
+
+        //parse the timeparts:
+
     }
 }
