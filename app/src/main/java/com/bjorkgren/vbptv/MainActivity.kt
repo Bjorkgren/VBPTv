@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         progressBar = findViewById<ProgressBar>(R.id.progress)
+        setupClickEvents()
     }
 
     override fun onResume() {
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 Response.Listener<String> { response ->
                     parseSVTTextPage(response)
                     progressBar.setProgress(5 - pages.size, true)
-                    updateUI()
+                    updateUI(0)
                     if(pages.size > 1){
                         fetchPages(queue, pages.drop(1))
                     }else{
@@ -79,10 +81,10 @@ class MainActivity : AppCompatActivity() {
     //Parsing from svt.se/svttext
     fun parseSVTTextPage(resultFromSvtPage: String){
         val rows = resultFromSvtPage.split('\n')
-        var parsing: Boolean = false
+        var parsing = false
         for(row in rows){
             if(row.contains("Fortsättning följer på nästa")) {
-                break;
+                break
             }
             if(!parsing){
                 parsing = row.contains("SVT Texts programguide")
@@ -101,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         if(line.contains("<span ")){
             val trimmed = line.trim()
             Log.w("LINE", trimmed)
-            val continuation = "<span class=\"G\">   "
+            val continuation = "<span class=\"G\">"
             if(trimmed.startsWith(continuation)){
                 //Append to latest added show headline
                 var ending = trimmed.substring(continuation.length)
@@ -110,8 +112,19 @@ class MainActivity : AppCompatActivity() {
                     ending = ending.substring(0, endOfLine)
                 }
                 ending = ending.trim()
-                //Log.e("got END for" + lastAddedChannel, "\"$ending\"")
-                schedule[lastAddedChannel]!!.last()!!.headline += " $ending"
+
+                //Om det finns en till:
+                val secondPos = trimmed.indexOf(continuation, endOfLine)
+                if(secondPos > 0){
+                    var secondPart = trimmed.substring(secondPos + continuation.length)
+                    val secondEnd = secondPart.indexOf('<')
+                    if(secondEnd > 1){
+                        secondPart = secondPart.substring(0, secondEnd).trim()
+                        ending += " $secondPart"
+                    }
+                }
+                Log.e("got END for" + lastAddedChannel, "\"$ending\"")
+                schedule[lastAddedChannel]!!.last().headline += " $ending"
 
             }else{
                 val time = trimmed.substring(0, line.indexOf('<') - 1).trim()
@@ -127,12 +140,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun updateUI(){
+    fun setupClickEvents(){
+        val uiChannels = listOf(R.id.svt1, R.id.svt2, R.id.tv3, R.id.tv4, R.id.kanal5)
+        for(x in 0 until uiChannels.size) {
+            val channelLayout = findViewById<View>(uiChannels[x])
+            channelLayout.setOnTouchListener { v, event ->
+                val upOrDown = event.action == MotionEvent.ACTION_DOWN
+                        || event.action == MotionEvent.ACTION_UP
+                if(upOrDown)
+                    updateUI(if(event.action == MotionEvent.ACTION_DOWN) 1 else 0)
+                upOrDown
+            }
+        }
+    }
+    fun updateUI(index: Int){
       // val listLayout = findViewById<LinearLayout>(R.id.channels)
         val uiChannels = listOf(R.id.svt1, R.id.svt2, R.id.tv3, R.id.tv4, R.id.kanal5)
         for(x in 0 until uiChannels.size){
-            val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
-            val program = schedule[wantedChannels[x]]?.first()
+                val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
+            val program = schedule[wantedChannels[x]]?.get(index)//.first()
             if(program != null){
                 channelLayout.findViewById<TextView>(R.id.txtChannelNo).text = (x+1).toString()
                 val time = channelLayout.findViewById<TextView>(R.id.txtTime)

@@ -6,9 +6,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
+        android:background="#00f"
         android:layout_width="50dp"
         android:layout_height="match_parent"
-        android:text="1"
+        android:text="@string/empty"
+        android:textColor="#fff"
         android:id="@+id/txtChannelNo"
         app:autoSizeTextType="uniform"
         android:gravity="center"
@@ -16,30 +18,38 @@
         app:layout_constraintLeft_toLeftOf="parent"
         />
 
-    <TextView
-        android:layout_width="90dp"
-        android:layout_height="match_parent"
-        android:text="Tid"
-        android:id="@+id/txtTime"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/txtChannelNo"
-
-        app:autoSizeTextType="uniform"
-        android:gravity="center"
-        />
-
-    <TextView
+    <LinearLayout
+        android:background="#aac"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="Headline"
-        android:id="@+id/txtHeadline"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/txtTime"
+        app:layout_constraintLeft_toRightOf="@id/txtChannelNo"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical">
 
-        app:autoSizeTextType="uniform"
-        android:gravity="center"
-        />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="@string/empty"
+            android:id="@+id/txtTime"
+
+            app:autoSizeTextType="uniform"
+            android:gravity="center"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:text="@string/empty"
+            android:id="@+id/txtHeadline"
+
+            app:autoSizeTextType="uniform"
+            android:gravity="center"
+            />
+
+    </LinearLayout>
 
 
 

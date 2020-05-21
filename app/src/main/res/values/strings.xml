@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">VBP SVTText Tablå</string>
+    <string name="empty">_</string>
 </resources>
