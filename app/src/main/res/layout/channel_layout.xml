@@ -6,21 +6,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
-        android:background="#00f"
-        android:layout_width="50dp"
+        android:background="#000"
+        android:layout_width="60dp"
         android:layout_height="match_parent"
         android:text="@string/empty"
-        android:textColor="#fff"
+        android:textColor="#000"
         android:id="@+id/txtChannelNo"
         app:autoSizeTextType="uniform"
+        android:autoSizeMaxTextSize="13sp"
         android:gravity="center"
+        android:textAlignment="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         />
 
     <LinearLayout
-        android:background="#aac"
+        android:background="#000"
         android:layout_width="0dp"
+        android:id="@+id/llChannelInfo"
         android:layout_height="match_parent"
         app:layout_constraintLeft_toRightOf="@id/txtChannelNo"
         app:layout_constraintRight_toRightOf="parent"
@@ -33,6 +36,7 @@
             android:layout_weight="1"
             android:text="@string/empty"
             android:id="@+id/txtTime"
+            android:textColor="#000"
 
             app:autoSizeTextType="uniform"
             android:gravity="center"
@@ -44,9 +48,11 @@
             android:layout_weight="3"
             android:text="@string/empty"
             android:id="@+id/txtHeadline"
+            android:textColor="#000"
 
             app:autoSizeTextType="uniform"
             android:gravity="center"
+            android:autoSizeMaxTextSize="13dp"
             />
 
     </LinearLayout>

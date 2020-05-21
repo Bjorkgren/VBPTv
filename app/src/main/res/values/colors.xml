@@ -5,4 +5,9 @@
     <color name="colorAccent">#D81B60</color>
     <color name="loaded">#0c0</color>
     <color name="nonloaded">#0fff</color>
+    <color name="svt1">#66F</color>
+    <color name="svt2">#0F0</color>
+    <color name="tv3">#FF0</color>
+    <color name="tv4">#F33</color>
+    <color name="kanal5">#F3F</color>
 </resources>

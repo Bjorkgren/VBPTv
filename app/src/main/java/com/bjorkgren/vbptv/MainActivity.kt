@@ -5,6 +5,7 @@ import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         progressBar = findViewById<ProgressBar>(R.id.progress)
+        colorizeUI()
         setupClickEvents()
     }
 
@@ -153,14 +155,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    fun colorizeUI(){
+        val uiChannels = listOf(R.id.svt1, R.id.svt2, R.id.tv3, R.id.tv4, R.id.kanal5)
+        //val bgBlack = ContextCompat.getColor(this, R.color.black)
+        val uiColors = listOf(R.color.svt1, R.color.svt2, R.color.tv3, R.color.tv4, R.color.kanal5)
+
+        for(x in 0 until uiChannels.size) {
+            val channelColor = ContextCompat.getColor(this, uiColors[x])
+
+            val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
+
+            val channelNo = channelLayout.findViewById<TextView>(R.id.txtChannelNo)
+            channelNo.text = (x+1).toString()
+            channelNo.setBackgroundColor(channelColor)
+            //channelLayout.setBackgroundColor(bgBlack)
+            val time = channelLayout.findViewById<TextView>(R.id.txtTime)
+            time.setTextColor(channelColor)
+            val headline = channelLayout.findViewById<TextView>(R.id.txtHeadline)
+            headline.setTextColor(channelColor)
+        }
+    }
     fun updateUI(index: Int){
       // val listLayout = findViewById<LinearLayout>(R.id.channels)
         val uiChannels = listOf(R.id.svt1, R.id.svt2, R.id.tv3, R.id.tv4, R.id.kanal5)
         for(x in 0 until uiChannels.size){
-                val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
+            val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
             val program = schedule[wantedChannels[x]]?.get(index)//.first()
             if(program != null){
-                channelLayout.findViewById<TextView>(R.id.txtChannelNo).text = (x+1).toString()
                 val time = channelLayout.findViewById<TextView>(R.id.txtTime)
                 val headline = channelLayout.findViewById<TextView>(R.id.txtHeadline)
                 time.text = program.begins
