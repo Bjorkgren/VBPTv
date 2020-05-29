@@ -4,6 +4,7 @@ import android.app.ActionBar
 import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.support.constraint.ConstraintLayout
 import android.support.v4.content.ContextCompat
 import android.util.Log
@@ -19,6 +20,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bjorkgren.vbptv.model.TVChannel
 import com.bjorkgren.vbptv.model.TVProgram
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,11 +60,19 @@ class MainActivity : AppCompatActivity() {
                 Response.Listener<String> { response ->
                     parseSVTTextPage(response)
                     progressBar.setProgress(5 - pages.size, true)
-                    updateUI(0)
+
                     if(pages.size > 1){
+                        updateUI(0)
                         fetchPages(queue, pages.drop(1))
                     }else{
                         progressBar.visibility = ProgressBar.GONE
+                        val handler = Handler()
+                        handler.postDelayed(object : Runnable {
+                            override fun run() {
+                                updateUI(0)
+                                handler.postDelayed(this, 1000*60)//60 sec delay
+                            }
+                        }, 0)
                     }
                 },
                 Response.ErrorListener { error ->
@@ -134,7 +144,9 @@ class MainActivity : AppCompatActivity() {
                 val headline = trimmed.substring(headlineStart, trimmed.indexOf('<', startIndex = headlineStart)).trim()
                 val channelEnd = trimmed.lastIndexOf('<')
                 val channel = trimmed.substring(trimmed.lastIndexOf('>', startIndex = channelEnd) + 1, channelEnd).trim()
-                schedule[channel]?.add(TVProgram(time, headline))
+
+                var prog = TVProgram(time, headline)
+                schedule[channel]?.add(prog)
                 Log.e("added", channel)
                 lastAddedChannel = channel
                 //Log.w("a find!", "$time^$headline^$channel")
@@ -177,7 +189,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun updateUI(index: Int){
-      // val listLayout = findViewById<LinearLayout>(R.id.channels)
+        val c = Calendar.getInstance()
+        val currentHour = c.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = c.get(Calendar.MINUTE)
+
         val uiChannels = listOf(R.id.svt1, R.id.svt2, R.id.tv3, R.id.tv4, R.id.kanal5)
         for(x in 0 until uiChannels.size){
             val channelLayout = findViewById<ConstraintLayout>(uiChannels[x])
@@ -186,6 +201,13 @@ class MainActivity : AppCompatActivity() {
                 channelLayout.findViewById<TextView>(R.id.txtTimeBegin).text = program.begins
                 channelLayout.findViewById<TextView>(R.id.txtTimeEnd).text = program.ends
                 channelLayout.findViewById<TextView>(R.id.txtHeadline).text = program.headline
+                var progBar = channelLayout.findViewById<ProgressBar>(R.id.timeProgress)
+                if(index<1){
+                    program.setProgress(currentHour, currentMinute)
+                    progBar.progress = program.progress
+                }else{
+                    progBar.setProgress(0)
+                }
             }
         }
     }

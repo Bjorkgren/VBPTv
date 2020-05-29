@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#000</color>
+    <color name="colorPrimaryDark">#000</color>
+    <color name="colorAccent">#999</color>
     <color name="loaded">#0c0</color>
     <color name="nonloaded">#0fff</color>
-    <color name="svt1">#66F</color>
+    <color name="svt1">#09F</color>
     <color name="svt2">#0F0</color>
     <color name="tv3">#FF0</color>
     <color name="tv4">#F33</color>
